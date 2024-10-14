@@ -1,0 +1,9 @@
+[package]
+name = "petals"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+either = "1.13.0"
+strum = "0.26"
+strum_macros = "0.26"

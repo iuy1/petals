@@ -1,0 +1,4 @@
+{hello};
+cmd = [{he;llo}] + cmd;
+cmd = [['\nworld\n']] + cmd;
+# Output: hello\nworld

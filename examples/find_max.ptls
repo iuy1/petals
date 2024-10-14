@@ -1,0 +1,14 @@
+a = [3; 4; 5; 0; 1; 2; 9; 8; 7; 6];
+max_val = a[0];
+i = 1; end = 10;
+loop_body = {
+  max_val = [max_val; a[i]][max_val < a[i]]
+};
+for_loop = {
+  cmd = loop_body + cmd;
+  cmd = {i = i + 1} + cmd;
+  cmd = [{};for_loop][i < end] + cmd;
+};
+cmd = for_loop + cmd;
+cmd = [max_val];
+# Output: 9
