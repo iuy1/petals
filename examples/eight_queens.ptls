@@ -1,0 +1,99 @@
+# eight_queens
+
+n = 8;
+output_count = 3;
+
+list5 = [0; 0; 0; 0; 0];
+list10 = list5 + list5;
+list20 = list10 + list10;
+
+# call function :
+# stack_top += 1; 
+# parameter_stack[stack_top] = ...;
+# cmd = fun_cmds + cmd;
+# return -> parameter_stack[stack_top];
+# stack_top -= 1;
+
+parameter_stack = list20;
+stack_top = 0-1;
+
+rows = list10;
+cols = list10;
+diagonal1 = list20;
+diagonal2 = list20;
+
+# parameter_stack[stack_top] = 
+# i = 0..<n: Number
+dfs = {
+  cmd = [{ # false case
+    # stack_top -> for_loop, dfs
+    stack_top = stack_top + 1;
+    parameter_stack[stack_top] = [0; n; { # loop_body
+      cmd = [{}; { # true case
+        # mark visited
+        cols[parameter_stack[stack_top][0]] = 1;
+        diagonal1[parameter_stack[stack_top-1] + parameter_stack[stack_top][0]] = 1;
+        diagonal2[n - parameter_stack[stack_top-1] + parameter_stack[stack_top][0]] = 1;
+
+        # recursive call
+        rows[parameter_stack[stack_top-1]] = parameter_stack[stack_top][0];
+        # cmd = [[parameter_stack[stack_top][0]; '\n']] + cmd;
+        stack_top = stack_top + 1;
+        parameter_stack[stack_top] = parameter_stack[stack_top-2] + 1;
+        cmd = dfs + cmd;
+        stack_top = stack_top - 1;
+
+        # unmark visited
+        cols[parameter_stack[stack_top][0]] = 0;
+        diagonal1[parameter_stack[stack_top-1] + parameter_stack[stack_top][0]] = 0;
+        diagonal2[n - parameter_stack[stack_top-1] + parameter_stack[stack_top][0]] = 0;
+
+      }][cols[parameter_stack[stack_top][0]]
+      + diagonal1[parameter_stack[stack_top-1] + parameter_stack[stack_top][0]]
+      + diagonal2[n - parameter_stack[stack_top-1] + parameter_stack[stack_top][0]] == 0] + cmd; # all 0 -> sum ==0
+    }];
+    # cmd = [[parameter_stack; '\n']] + cmd;
+    cmd = for_loop + cmd;
+    stack_top = stack_top - 1;
+  }; { # true case
+    answer_count = answer_count + 1;
+    cmd = print + cmd;
+  }][parameter_stack[stack_top] == n] + cmd
+};
+
+print = {
+  cmd = [{}; { # true case
+    stack_top = stack_top + 1;
+    parameter_stack[stack_top] = [0; n; { # loop_body
+      cmd = [[rows[parameter_stack[stack_top][0]]]] + cmd
+    }];
+    cmd = for_loop + cmd;
+    stack_top = stack_top - 1;
+    cmd = [['\n']] + cmd;
+  }][answer_count <= output_count] + cmd
+};
+
+# parameter_stack[stack_top] =
+# [i = start: Number; end: Number; loop_body: List[String]];
+for_loop = {
+  cmd = [{}; {
+    cmd = parameter_stack[stack_top][2] + cmd;
+    parameter_stack[stack_top][0] = parameter_stack[stack_top][0] + 1;
+    cmd = for_loop + cmd;
+  }][parameter_stack[stack_top][0] < parameter_stack[stack_top][1]] + cmd
+};
+
+answer_count = 0;
+stack_top = stack_top + 1;
+parameter_stack[stack_top] = 0;
+cmd = dfs + cmd;
+stack_top = stack_top - 1;
+cmd = [[answer_count]] + cmd;
+
+# cmd = {}; # exit
+
+# Output: 
+# 04752613
+# 05726314
+# 06357142
+# 92
