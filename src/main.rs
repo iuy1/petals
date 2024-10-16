@@ -41,8 +41,8 @@ enum Operator {
   SquareBracketLeft,
   SquareBracketRight,
   CreateList,
-  CurlyBraketLeft,
-  // CurlyBraketRight,
+  CurlyBracketLeft,
+  // CurlyBracketRight,
   Semicolon,
 }
 #[derive(PartialEq)]
@@ -70,9 +70,9 @@ impl From<&str> for Operator {
       ")" => Operator::ParenthesisRight,
       "[" => Operator::SquareBracketLeft,
       "]" => Operator::SquareBracketRight,
-      // "{" => Operator::CurlyBraketLeft,
-      // "}" => Operator::CurlyBraketRight,
-      ";" => Operator::Semicolon,
+      // "{" => Operator::CurlyBracketLeft,
+      // "}" => Operator::CurlyBracketRight,
+      ";" | "," => Operator::Semicolon,
       _ => Operator::None,
     }
   }
@@ -91,7 +91,7 @@ impl Operator {
     match self {
       Operator::ParenthesisLeft | Operator::ParenthesisRight => 1,
       Operator::SquareBracketLeft | Operator::SquareBracketRight => 1,
-      // Operator::CurlyBraketLeft | Operator::CurlyBraketRight => 1,
+      // Operator::CurlyBracketLeft | Operator::CurlyBracketRight => 1,
       Operator::Semicolon => 2,
       Operator::Assign => 3,
       Operator::Equal | Operator::NotEqual => 4,
@@ -121,14 +121,14 @@ enum OperatorTree {
 fn main() {
   let file_path = match env::args().nth(2) {
     Some(path) => path,
-    None => "../examples/find_max.ptls".to_string(),
+    None => "../examples/eight_queens.ptls".to_string(),
   };
   let content = fs::read_to_string(file_path).unwrap();
   // println!("content: {}", content);
-  let inital_command = pre_compile(&content);
-  // println!("inital_command: {}", inital_command);
+  let initial_command = pre_compile(&content);
+  // println!("initial_command: {}", initial_command);
   let mut variables: HashMap<VariableName, Variable> = HashMap::new();
-  execute(&inital_command, &mut variables);
+  execute(&initial_command, &mut variables);
   // println!("HashMap: {:?}", variables);
   fn print_list(list: Vec<Variable>) {
     for item in list {
@@ -295,18 +295,18 @@ fn tokenize(content: &str) -> Vec<Token> {
         tokens.push(Token::Constant(Variable::String(value)));
       }
       '{' => {
-        let mut left_brackets = vec![Operator::CurlyBraketLeft];
+        let mut left_brackets = vec![Operator::CurlyBracketLeft];
         let mut list = Vec::<Variable>::new();
         let mut buffer = String::new();
         while let Some(d) = char_iter.next() {
           match d {
             '{' => {
-              left_brackets.push(Operator::CurlyBraketLeft);
+              left_brackets.push(Operator::CurlyBracketLeft);
               buffer.push(d);
             }
             '}' => {
               let top = left_brackets.pop().unwrap();
-              assert_eq!(top, Operator::CurlyBraketLeft);
+              assert_eq!(top, Operator::CurlyBracketLeft);
               if left_brackets.len() > 0 {
                 buffer.push(d);
               } else {
@@ -448,25 +448,29 @@ fn generate_operator_tree(tokens: Vec<Token>) -> OperatorTree {
         }
         Operator::SquareBracketRight => {
           merge_expression(&mut stack, &Operator::Semicolon);
-          stack.push(ElementType::Operator(Operator::Semicolon));
           let mut buffer = Vec::<OperatorTree>::new();
-          while stack.len() > 0 {
-            if let ElementType::Operator(op) = stack.pop().unwrap() {
-              if op == Operator::SquareBracketLeft {
-                break;
-              }
-              assert_eq!(
-                op,
-                Operator::Semicolon,
-                "Compiler error: expected semicolon"
-              );
-              if let ElementType::Variable(var) = stack.pop().unwrap() {
-                buffer.push(var);
+          if let ElementType::Operator(Operator::SquareBracketLeft) = stack.last().unwrap() {
+            stack.pop();
+          } else {
+            stack.push(ElementType::Operator(Operator::Semicolon));
+            while stack.len() > 0 {
+              if let ElementType::Operator(op) = stack.pop().unwrap() {
+                if op == Operator::SquareBracketLeft {
+                  break;
+                }
+                assert_eq!(
+                  op,
+                  Operator::Semicolon,
+                  "Compiler error: expected semicolon"
+                );
+                if let ElementType::Variable(var) = stack.pop().unwrap() {
+                  buffer.push(var);
+                } else {
+                  panic!("Stack top should be variable");
+                }
               } else {
-                panic!("Stack top should be variable");
+                panic!("Stack top should be operator");
               }
-            } else {
-              panic!("Stack top should be operator");
             }
           }
           buffer.reverse();
